@@ -1,7 +1,8 @@
-import requests
+import aiohttp
 from typing import List, Dict
 from dataclasses import dataclass, field
 import json
+import asyncio
 
 @dataclass
 class ChampionStats:
@@ -55,9 +56,11 @@ class Champions:
     by_id: Dict[int, Champion] = field(default_factory=dict)
 
     @classmethod
-    def load_from_url(cls):
+    async def load_from_url(cls):
         url = 'https://ddragon.leagueoflegends.com/cdn/14.5.1/data/ru_RU/champion.json'
-        result = json.loads(requests.get(url).text)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                result = await response.json()
         champs: Dict = result['data']
         by_name = {}
         by_id = {}
@@ -68,7 +71,9 @@ class Champions:
         return cls(by_name, by_id)
 
 
-champs_db = Champions.load_from_url()
+# champs_db = Champions.load_from_url()
+# if __name__ == '__main__':
+#     asyncio.run(Champions.load_from_url())
 #
 #
 # @dataclass
@@ -89,17 +94,9 @@ champs_db = Champions.load_from_url()
 # user_puuid = 'j9eGWo7aDNcrCFSegcc1j0sPTCLiLLxU8z2JWRqoYcRA3Jr0nLXtmi08ySIttpTc1xJrVVdSXv4z7w'
 # user_puuid = '9dUIxu1rGah-WAxCQ-LaDzWLb5lY_gjuI91r96HpLbuFlE06FANaIpeOJAKzt7RBuV4mklek3hlbNA'
 # url = f'https://euw1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{user_puuid}?api_key=RGAPI-ca7ff195-03df-4712-b782-66158166f0f0'
-#
+
 # def main():
-#     result: List[Dict] = json.loads(requests.get(url).text)
-#     obj = [ChampionMastery(**champ) for champ in result]
-#     msg = 'Этот членосос играет на:\n'
-#     for number, champ in enumerate(obj):
-#         champ_obj = champs_db.by_id.get(champ.championId)
-#         msg += f'{champ_obj.name} (ур. {champ.championLevel}) ПТС: {champ.championPoints}\n'
-#         if number == 4:
-#             break
-#     print(msg)
+#     c
 #
 #
 # if __name__ == '__main__':
